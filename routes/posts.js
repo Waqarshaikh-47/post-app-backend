@@ -29,10 +29,6 @@ router.put('/:id', auth, async (req, res) => {
       return res.status(404).json({ msg: 'Post not found' });
     }
 
-    if (post.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
-
     post.title = req.body.title || post.title;
     post.description = req.body.description || post.description;
 
@@ -52,11 +48,7 @@ router.delete('/:id', auth, async (req, res) => {
       return res.status(404).json({ msg: 'Post not found' });
     }
 
-    if (post.user.toString() !== req.user.id) {
-      return res.status(401).json({ msg: 'User not authorized' });
-    }
-
-    await post.remove();
+    await Post.findByIdAndDelete(req.params.id);
     res.json({ msg: 'Post removed' });
   } catch (err) {
     console.error(err.message);
@@ -66,7 +58,7 @@ router.delete('/:id', auth, async (req, res) => {
 
 // Get posts with pagination and search
 router.get('/', async (req, res) => {
-  const { page = 1, limit = 10, search = '' } = req.query;
+  const { page = 1, limit = 5, search = '' } = req.query;
   try {
     const posts = await Post.find({ title: { $regex: search, $options: 'i' } })
       .limit(limit * 1)
